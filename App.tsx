@@ -7,7 +7,9 @@ import { StatusBar } from 'react-native';
 export default function App() {
   return (
     <AudioProvider>
-      <StatusBar/>
+      <StatusBar
+        barStyle='dark-content'
+      />
       <NavigationContainer>
         <Navigator/>
       </NavigationContainer>
