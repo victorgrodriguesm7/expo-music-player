@@ -1,10 +1,12 @@
 import React, { Component, createContext, ReactNode, useEffect, useState } from 'react'
 import { Alert, Text, View, StyleSheet, Linking, Button } from 'react-native'
 import * as MediaLibrary from 'expo-media-library';
+import { DataProvider } from 'recyclerlistview';
 
 interface AudioContextData {
-    audioFiles: Array<MediaLibrary.Asset>;
+    audioFiles: (MediaLibrary.Asset | MediaLibrary.Asset[])[];
     permissionError: boolean;
+    dataProvider: DataProvider;
 }
 
 export const audioContext = createContext({} as AudioContextData);
@@ -14,12 +16,14 @@ export default class AudioProvider extends Component<{}, AudioContextData>{
         super(props);
 
         this.state = {
-            audioFiles: [] as Array<MediaLibrary.Asset>,
-            permissionError: false
+            audioFiles: [] as (MediaLibrary.Asset | MediaLibrary.Asset[])[],
+            permissionError: false,
+            dataProvider: new DataProvider((r1, r2) => r1 !== r2)
         }
     }
 
     async getAudioFiles(){
+        const { dataProvider, audioFiles } = this.state;
         let media = await MediaLibrary.getAssetsAsync({
             mediaType: "audio"
         });
@@ -30,8 +34,15 @@ export default class AudioProvider extends Component<{}, AudioContextData>{
         });
 
         this.setState({ 
-            ...this.state, 
-            audioFiles: media.assets
+            ...this.state,
+            audioFiles: [
+                ...audioFiles, 
+                ...media.assets
+            ],
+            dataProvider: dataProvider.cloneWithRows([
+                ...audioFiles, 
+                ...media.assets
+            ])
         });
     }
 
